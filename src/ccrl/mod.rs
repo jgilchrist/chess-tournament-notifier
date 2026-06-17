@@ -14,7 +14,7 @@ const POLL_DELAY: Duration = Duration::from_secs(30);
 
 pub fn run() -> Result<()> {
     let config = config::get_config().expect("Unable to load config");
-    let log = crate::log::get_logger(&config, "ccrl-live-notifier");
+    let log = crate::log::get_logger(&config, "ccrl");
 
     log.start();
 
