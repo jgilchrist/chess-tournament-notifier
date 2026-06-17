@@ -1,11 +1,11 @@
 use anyhow::Result;
 use serde_json::{json, Value};
 
-pub fn send_message(webhook_url: &str, message: &str) -> Result<()> {
+pub fn send_message(webhook_url: &str, username: &str, message: &str) -> Result<()> {
     call_webhook(
         webhook_url,
         json!({
-            "username": "ccrl-live-notifier",
+            "username": username,
             "allowed_mentions": { "parse": ["users"] },
             "content": message
         }),

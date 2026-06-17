@@ -1,6 +1,6 @@
-use self::log::Logger;
 use self::notify::NotifyContent;
-use self::state::SeenGames;
+use crate::log::Logger;
+use crate::state::SeenGames;
 use anyhow::Result;
 use std::collections::HashSet;
 use std::time::Duration;
@@ -8,22 +8,19 @@ use std::time::Duration;
 mod ccrl_pgn;
 mod ccrllive;
 mod config;
-mod discord;
-mod log;
 mod notify;
-mod state;
 
 const POLL_DELAY: Duration = Duration::from_secs(30);
 
 pub fn run() -> Result<()> {
     let config = config::get_config().expect("Unable to load config");
-    let log = log::get_logger(&config);
+    let log = crate::log::get_logger(&config, "ccrl-live-notifier");
 
     log.start();
 
     let mut first_run = true;
 
-    let mut seen_games = SeenGames::load().expect("Unable to load state");
+    let mut seen_games = SeenGames::load("ccrl-state.bin").expect("Unable to load state");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
     log.info(&format!("Loaded config: {:?}", notify_config));
@@ -70,7 +67,7 @@ pub fn run() -> Result<()> {
 
         let new_games = current_games
             .iter()
-            .filter(|(_, game)| !seen_games.contains(game))
+            .filter(|(_, game)| !seen_games.contains(game.as_hash()))
             .collect::<Vec<_>>();
 
         for (room, game) in &new_games {
@@ -120,7 +117,7 @@ pub fn run() -> Result<()> {
                 }
             }
 
-            let write_state_result = seen_games.add(game);
+            let write_state_result = seen_games.add(game.as_hash());
 
             if let Err(e) = write_state_result {
                 log.error(&format!("Unable to write seen game to file: {:?}", e));

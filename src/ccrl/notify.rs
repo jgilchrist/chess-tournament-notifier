@@ -1,6 +1,6 @@
 use super::ccrllive::{CcrlLivePlayer, CcrlLiveRoom};
-use super::config::Config;
-use super::discord;
+use crate::config::Config;
+use crate::discord;
 use anyhow::Result;
 use std::collections::HashSet;
 
@@ -28,6 +28,7 @@ pub fn notify(config: &Config, content: NotifyContent) -> Result<()> {
 
     discord::send_message(
         &config.notify_webhook,
+        "ccrl-live-notifier",
         &format!(
             "[`{} - {}`]({}) `{}` vs. `{}`{}",
             content.room.code(),

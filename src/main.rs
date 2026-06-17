@@ -1,4 +1,8 @@
 mod ccrl;
+mod config;
+mod discord;
+mod log;
+mod state;
 mod tcec;
 
 fn main() {

@@ -1,17 +1,14 @@
 use self::config::NotifyConfig;
-use self::log::Logger;
 use self::notify::NotifyContent;
-use self::state::SeenGames;
+use crate::log::Logger;
+use crate::state::SeenGames;
 use anyhow::Result;
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::time::Duration;
 
 mod config;
-mod discord;
-mod log;
 mod notify;
-mod state;
 mod tcec;
 mod tcec_pgn;
 
@@ -25,13 +22,13 @@ impl PartialEq for NotifyConfig {
 
 pub fn run() -> Result<()> {
     let config = config::get_config().expect("Unable to load config");
-    let log = log::get_logger(&config);
+    let log = crate::log::get_logger(&config, "tcec-notifier");
 
     log.start();
 
     let mut first_run = true;
 
-    let mut seen_games = SeenGames::load().expect("Unable to load state");
+    let mut seen_games = SeenGames::load("tcec-state.bin").expect("Unable to load state");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
     log.info(&format!("Loaded config: {:?}", notify_config));
@@ -78,7 +75,7 @@ pub fn run() -> Result<()> {
             first_run = false;
         }
 
-        if seen_games.contains(&game) {
+        if seen_games.contains(game.as_hash()) {
             std::thread::sleep(POLL_DELAY);
             continue;
         }
@@ -115,7 +112,7 @@ pub fn run() -> Result<()> {
             log.error(&format!("Unable to send notify: {:?}", e));
         }
 
-        let write_state_result = seen_games.add(&game);
+        let write_state_result = seen_games.add(game.as_hash());
 
         if let Err(e) = write_state_result {
             log.error(&format!("Unable to write seen game to file: {:?}", e));

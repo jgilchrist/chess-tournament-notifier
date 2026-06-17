@@ -1,10 +1,10 @@
-use super::config::Config;
-use super::discord;
+use crate::config::Config;
+use crate::discord;
 
-pub fn get_logger(config: &Config) -> Box<dyn Logger> {
+pub fn get_logger(config: &Config, username: &str) -> Box<dyn Logger> {
     match config.log_webhook {
         None => Box::new(StdoutLogger),
-        Some(ref hook) => Box::new(DiscordLogger::new(hook.clone())),
+        Some(ref hook) => Box::new(DiscordLogger::new(hook.clone(), username.to_string())),
     }
 }
 
@@ -54,29 +54,33 @@ impl Logger for StdoutLogger {
 #[derive(Clone)]
 pub struct DiscordLogger {
     log_webhook: String,
+    username: String,
 }
 
 impl DiscordLogger {
-    pub fn new(log_webhook: String) -> DiscordLogger {
-        Self { log_webhook }
+    pub fn new(log_webhook: String, username: String) -> DiscordLogger {
+        Self {
+            log_webhook,
+            username,
+        }
     }
 }
 
 impl Logger for DiscordLogger {
     fn start(&self) {
-        let _ = discord::send_message(&self.log_webhook, "```───────────────────────────────────────────────────────────────────────────────────────────────────────────```");
+        let _ = discord::send_message(&self.log_webhook, &self.username, "```───────────────────────────────────────────────────────────────────────────────────────────────────────────```");
     }
 
     fn info(&self, msg: &str) {
         println!("{}", msg);
 
-        let _ = discord::send_message(&self.log_webhook, msg);
+        let _ = discord::send_message(&self.log_webhook, &self.username, msg);
     }
 
     fn warning(&self, msg: &str) {
         println!(":yellow_circle: {}", msg);
 
-        let _ = discord::send_message(&self.log_webhook, msg);
+        let _ = discord::send_message(&self.log_webhook, &self.username, msg);
     }
 
     fn error(&self, msg: &str) {
@@ -84,6 +88,7 @@ impl Logger for DiscordLogger {
 
         let _ = discord::send_message(
             &self.log_webhook,
+            &self.username,
             &("<@!106120945231466496> :red_circle:".to_string() + msg),
         );
     }

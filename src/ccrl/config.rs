@@ -1,3 +1,4 @@
+use crate::config::Config;
 use anyhow::Result;
 use regex::Regex;
 use reqwest::Url;
@@ -57,12 +58,6 @@ impl PartialEq for TournamentRules {
                 .zip(other.rules.iter())
                 .all(|(a, b)| a.pattern.as_str() == b.pattern.as_str() && a.action == b.action)
     }
-}
-
-pub struct Config {
-    pub config_url: Url,
-    pub notify_webhook: String,
-    pub log_webhook: Option<String>,
 }
 
 #[derive(Deserialize)]

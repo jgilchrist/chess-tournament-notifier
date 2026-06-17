@@ -1,5 +1,5 @@
-use super::config::Config;
-use super::discord;
+use crate::config::Config;
+use crate::discord;
 use super::tcec::{EngineName, TCEC_URL};
 use anyhow::Result;
 use std::collections::HashSet;
@@ -27,6 +27,7 @@ pub fn notify(config: &Config, content: NotifyContent) -> Result<()> {
 
     discord::send_message(
         &config.notify_webhook,
+        "tcec-notifier",
         &format!(
             "[`{}`]({}) `{}` vs. `{}`{}",
             content.tournament, TCEC_URL, content.white_player, content.black_player, mentions_str

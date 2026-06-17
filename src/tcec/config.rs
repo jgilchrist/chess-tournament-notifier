@@ -1,3 +1,4 @@
+use crate::config::Config;
 use anyhow::Result;
 use reqwest::Url;
 use serde::Deserialize;
@@ -6,12 +7,6 @@ use std::collections::{HashMap, HashSet};
 #[derive(Debug)]
 pub struct NotifyConfig {
     pub engines: HashMap<String, HashSet<String>>,
-}
-
-pub struct Config {
-    pub config_url: Url,
-    pub notify_webhook: String,
-    pub log_webhook: Option<String>,
 }
 
 #[derive(Deserialize)]

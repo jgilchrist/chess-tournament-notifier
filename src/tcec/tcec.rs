@@ -1,4 +1,4 @@
-use super::log::Logger;
+use crate::log::Logger;
 use super::tcec_pgn;
 use super::tcec_pgn::Pgn;
 use anyhow::{bail, Result};
