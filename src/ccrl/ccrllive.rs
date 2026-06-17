@@ -1,6 +1,6 @@
-use crate::ccrl_pgn;
-use crate::ccrl_pgn::Pgn;
-use crate::log::Logger;
+use super::ccrl_pgn;
+use super::ccrl_pgn::Pgn;
+use super::log::Logger;
 use anyhow::Result;
 use regex::Regex;
 use std::fmt::Formatter;

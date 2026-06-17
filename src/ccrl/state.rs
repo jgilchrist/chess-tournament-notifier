@@ -1,10 +1,10 @@
-use crate::ccrl_pgn::Pgn;
+use super::ccrl_pgn::Pgn;
 use anyhow::Result;
 use std::collections::HashSet;
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 
-const STATE_FILE: &str = "state.bin";
+const STATE_FILE: &str = "ccrl-state.bin";
 
 pub struct SeenGames {
     state: HashSet<u64>,

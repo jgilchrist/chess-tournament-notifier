@@ -1,13 +1,12 @@
-use crate::ccrllive::{CcrlLivePlayer, CcrlLiveRoom};
-use crate::config::Config;
-use crate::discord;
+use super::config::Config;
+use super::discord;
+use super::tcec::{EngineName, TCEC_URL};
 use anyhow::Result;
 use std::collections::HashSet;
 
 pub struct NotifyContent {
-    pub white_player: CcrlLivePlayer,
-    pub black_player: CcrlLivePlayer,
-    pub room: CcrlLiveRoom,
+    pub white_player: EngineName,
+    pub black_player: EngineName,
     pub tournament: String,
     pub mentions: HashSet<String>,
 }
@@ -29,13 +28,8 @@ pub fn notify(config: &Config, content: NotifyContent) -> Result<()> {
     discord::send_message(
         &config.notify_webhook,
         &format!(
-            "[`{} - {}`]({}) `{}` vs. `{}`{}",
-            content.room.code(),
-            content.tournament,
-            content.room.url(),
-            content.white_player,
-            content.black_player,
-            mentions_str
+            "[`{}`]({}) `{}` vs. `{}`{}",
+            content.tournament, TCEC_URL, content.white_player, content.black_player, mentions_str
         ),
     )
 }
