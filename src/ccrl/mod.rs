@@ -1,6 +1,6 @@
+use self::db::CcrlDb;
 use self::notify::NotifyContent;
 use crate::log::Logger;
-use crate::state::SeenGames;
 use anyhow::Result;
 use std::collections::HashSet;
 use std::time::Duration;
@@ -8,6 +8,7 @@ use std::time::Duration;
 mod ccrl_pgn;
 mod ccrllive;
 mod config;
+mod db;
 mod notify;
 
 const POLL_DELAY: Duration = Duration::from_secs(30);
@@ -20,7 +21,7 @@ pub fn run() -> Result<()> {
 
     let mut first_run = true;
 
-    let mut seen_games = SeenGames::load("ccrl-state.bin").expect("Unable to load state");
+    let db = CcrlDb::open().expect("Unable to open database");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
     log.info(&format!("Loaded config: {:?}", notify_config));
@@ -67,7 +68,7 @@ pub fn run() -> Result<()> {
 
         let new_games = current_games
             .iter()
-            .filter(|(_, game)| !seen_games.contains(game.as_hash()))
+            .filter(|(_, game)| !db.contains(game).unwrap_or(false))
             .collect::<Vec<_>>();
 
         for (room, game) in &new_games {
@@ -117,10 +118,8 @@ pub fn run() -> Result<()> {
                 }
             }
 
-            let write_state_result = seen_games.add(game.as_hash());
-
-            if let Err(e) = write_state_result {
-                log.error(&format!("Unable to write seen game to file: {:?}", e));
+            if let Err(e) = db.add(&game) {
+                log.error(&format!("Unable to write seen game to db: {:?}", e));
             }
         }
 

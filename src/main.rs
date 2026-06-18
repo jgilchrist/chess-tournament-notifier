@@ -1,11 +1,13 @@
 mod ccrl;
 mod config;
+mod db;
 mod discord;
 mod log;
-mod state;
 mod tcec;
 
 fn main() {
+    db::run_migrations().expect("Unable to run database migrations");
+
     let ccrl = std::thread::Builder::new()
         .name("ccrl".into())
         .spawn(|| {

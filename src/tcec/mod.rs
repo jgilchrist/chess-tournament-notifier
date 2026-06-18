@@ -1,13 +1,14 @@
 use self::config::NotifyConfig;
+use self::db::TcecDb;
 use self::notify::NotifyContent;
 use crate::log::Logger;
-use crate::state::SeenGames;
 use anyhow::Result;
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::time::Duration;
 
 mod config;
+mod db;
 mod notify;
 mod tcec;
 mod tcec_pgn;
@@ -28,7 +29,7 @@ pub fn run() -> Result<()> {
 
     let mut first_run = true;
 
-    let mut seen_games = SeenGames::load("tcec-state.bin").expect("Unable to load state");
+    let db = TcecDb::open().expect("Unable to open database");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
     log.info(&format!("Loaded config: {:?}", notify_config));
@@ -75,7 +76,7 @@ pub fn run() -> Result<()> {
             first_run = false;
         }
 
-        if seen_games.contains(game.as_hash()) {
+        if db.contains(&game).unwrap_or(false) {
             std::thread::sleep(POLL_DELAY);
             continue;
         }
@@ -112,10 +113,8 @@ pub fn run() -> Result<()> {
             log.error(&format!("Unable to send notify: {:?}", e));
         }
 
-        let write_state_result = seen_games.add(game.as_hash());
-
-        if let Err(e) = write_state_result {
-            log.error(&format!("Unable to write seen game to file: {:?}", e));
+        if let Err(e) = db.add(&game) {
+            log.error(&format!("Unable to write seen game to db: {:?}", e));
         }
 
         std::thread::sleep(POLL_DELAY);
