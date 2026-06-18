@@ -13,7 +13,11 @@ pub fn send_message(webhook_url: &str, username: &str, message: &str) -> Result<
 }
 
 pub fn send_log_message(webhook_url: &str, prefix: &str, message: &str) -> Result<()> {
-    send_message(webhook_url, prefix, &format!("[{}] {}", prefix, message))
+    send_message(
+        webhook_url,
+        "chess-tournament-notifier",
+        &format!("[{}] {}", prefix, message),
+    )
 }
 
 fn call_webhook(webhook_url: &str, body: Value) -> Result<()> {
