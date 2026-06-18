@@ -74,19 +74,19 @@ impl Logger for DiscordLogger {
     fn info(&self, msg: &str) {
         println!("{}", msg);
 
-        let _ = discord::send_message(&self.log_webhook, &self.username, msg);
+        let _ = discord::send_log_message(&self.log_webhook, &self.username, msg);
     }
 
     fn warning(&self, msg: &str) {
         println!(":yellow_circle: {}", msg);
 
-        let _ = discord::send_message(&self.log_webhook, &self.username, msg);
+        let _ = discord::send_log_message(&self.log_webhook, &self.username, msg);
     }
 
     fn error(&self, msg: &str) {
         eprintln!("{}", msg);
 
-        let _ = discord::send_message(
+        let _ = discord::send_log_message(
             &self.log_webhook,
             &self.username,
             &("<@!106120945231466496> :red_circle:".to_string() + msg),
