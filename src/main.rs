@@ -1,5 +1,4 @@
 mod ccrl;
-mod config;
 mod db;
 mod discord;
 mod log;

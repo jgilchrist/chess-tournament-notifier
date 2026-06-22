@@ -1,8 +1,8 @@
 use super::ccrllive::{CcrlLivePlayer, CcrlLiveRoom};
-use crate::config::Config;
 use crate::discord;
 use anyhow::Result;
 use std::collections::HashSet;
+use crate::ccrl::config::Config;
 
 pub struct NotifyContent {
     pub white_player: CcrlLivePlayer,

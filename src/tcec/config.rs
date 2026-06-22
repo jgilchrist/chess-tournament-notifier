@@ -1,27 +1,37 @@
-use crate::config::Config;
 use anyhow::Result;
 use reqwest::Url;
 use serde::Deserialize;
 use std::collections::{HashMap, HashSet};
 
+pub struct Config {
+    pub config_url: Url,
+    pub tcec_notify_webhook: String,
+    pub alphabeta_notify_webhook: String,
+    pub log_webhook: Option<String>,
+}
+
 #[derive(Debug)]
 pub struct NotifyConfig {
-    pub engines: HashMap<String, HashSet<String>>,
+    pub tcec_engines: HashMap<String, HashSet<String>>,
+    pub alphabeta_engines: HashMap<String, HashSet<String>>,
 }
 
 #[derive(Deserialize)]
 struct ConfigFile {
-    pub users: HashMap<String, HashSet<String>>,
+    pub tcec_users: HashMap<String, HashSet<String>>,
+    pub alphabeta_users: HashMap<String, HashSet<String>>,
 }
 
 pub fn get_config() -> Result<Config> {
     let config_url = std::env::var("TCEC_CONFIG_URL")?;
-    let notify_webhook = std::env::var("TCEC_NOTIFY_WEBHOOK")?;
+    let tcec_notify_webhook = std::env::var("TCEC_NOTIFY_WEBHOOK")?;
+    let alphabeta_notify_webhook = std::env::var("ALPHABETA_NOTIFY_WEBHOOK")?;
     let log_webhook = std::env::var("LOG_WEBHOOK").ok();
 
     Ok(Config {
         config_url: Url::parse(&config_url)?,
-        notify_webhook,
+        tcec_notify_webhook,
+        alphabeta_notify_webhook,
         log_webhook,
     })
 }
@@ -40,11 +50,22 @@ pub fn get_notify_config(config: &Config) -> Result<NotifyConfig> {
 
     let config_file = serde_json5::from_str::<ConfigFile>(&config_file_contents)?;
 
-    let mut engines_to_users: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut tcec_engines_to_users: HashMap<String, HashSet<String>> = HashMap::new();
 
-    for (user, engines) in &config_file.users {
+    for (user, engines) in &config_file.tcec_users {
         for engine in engines {
-            engines_to_users
+            tcec_engines_to_users
+                .entry(engine.clone())
+                .or_default()
+                .insert(user.clone());
+        }
+    }
+
+    let mut alphabeta_engines_to_users: HashMap<String, HashSet<String>> = HashMap::new();
+
+    for (user, engines) in &config_file.alphabeta_users {
+        for engine in engines {
+            alphabeta_engines_to_users
                 .entry(engine.clone())
                 .or_default()
                 .insert(user.clone());
@@ -52,6 +73,7 @@ pub fn get_notify_config(config: &Config) -> Result<NotifyConfig> {
     }
 
     Ok(NotifyConfig {
-        engines: engines_to_users,
+        tcec_engines: tcec_engines_to_users,
+        alphabeta_engines: alphabeta_engines_to_users,
     })
 }

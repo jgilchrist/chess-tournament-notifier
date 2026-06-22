@@ -1,10 +1,9 @@
-use crate::config::Config;
 use crate::discord;
 
-pub fn get_logger(config: &Config, username: &str) -> Box<dyn Logger> {
-    match config.log_webhook {
+pub fn get_logger(log_webhook: Option<String>, username: &str) -> Box<dyn Logger> {
+    match log_webhook {
         None => Box::new(StdoutLogger),
-        Some(ref hook) => Box::new(DiscordLogger::new(hook.clone(), username.to_string())),
+        Some(ref hook) => Box::new(DiscordLogger::new(hook.to_string(), username.to_string())),
     }
 }
 

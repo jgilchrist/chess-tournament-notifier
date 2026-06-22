@@ -1,9 +1,14 @@
-use crate::config::Config;
 use anyhow::Result;
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
 use std::collections::HashMap;
+
+pub struct Config {
+    pub config_url: Url,
+    pub notify_webhook: String,
+    pub log_webhook: Option<String>,
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct NotifyRule {

@@ -17,13 +17,13 @@ const POLL_DELAY: Duration = Duration::from_secs(30);
 
 impl PartialEq for NotifyConfig {
     fn eq(&self, other: &Self) -> bool {
-        self.engines == other.engines
+        self.tcec_engines == other.tcec_engines
     }
 }
 
 pub fn run() -> Result<()> {
     let config = config::get_config().expect("Unable to load config");
-    let log = crate::log::get_logger(&config, "tcec");
+    let log = crate::log::get_logger(config.log_webhook.clone(), "tcec");
 
     log.start();
 
@@ -86,30 +86,56 @@ pub fn run() -> Result<()> {
             game.white_player, game.black_player,
         ));
 
-        let mut mentions = HashSet::new();
+        let mut tcec_mentions = HashSet::new();
+        let mut alphabeta_mentions = HashSet::new();
 
-        for (engine, notifies) in &notify_config.engines {
+        for (engine, notifies) in &notify_config.tcec_engines {
             if game.has_player(engine) {
-                mentions.extend(notifies.iter().cloned());
+                tcec_mentions.extend(notifies.iter().cloned());
                 log.info(&format!(
-                    "Will notify {} users for engine `{}`",
+                    "Will notify {} users for engine `{}` in TCEC",
                     notifies.len(),
                     &engine,
                 ));
             }
         }
 
-        let notify_result = notify::notify(
+        for (engine, notifies) in &notify_config.alphabeta_engines {
+            if game.has_player(engine) {
+                alphabeta_mentions.extend(notifies.iter().cloned());
+                log.info(&format!(
+                    "Will notify {} users for engine `{}` in AlphaBeta",
+                    notifies.len(),
+                    &engine,
+                ));
+            }
+        }
+
+        let tcec_notify_result = notify::notify_tcec(
             &config,
             NotifyContent {
                 tournament: game.event.clone(),
                 white_player: game.white_player.clone(),
                 black_player: game.black_player.clone(),
-                mentions,
+                mentions: tcec_mentions,
             },
         );
 
-        if let Err(e) = notify_result {
+        if let Err(e) = tcec_notify_result {
+            log.error(&format!("Unable to send notify: {:?}", e));
+        }
+
+        let alphabeta_notify_result = notify::notify_alphabeta(
+            &config,
+            NotifyContent {
+                tournament: game.event.clone(),
+                white_player: game.white_player.clone(),
+                black_player: game.black_player.clone(),
+                mentions: alphabeta_mentions,
+            },
+        );
+
+        if let Err(e) = alphabeta_notify_result {
             log.error(&format!("Unable to send notify: {:?}", e));
         }
 

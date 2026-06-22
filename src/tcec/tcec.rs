@@ -8,6 +8,7 @@ use std::hash::Hasher;
 
 const TCEC_PGN_URL: &str = "https://tcec-chess.com/live.pgn";
 pub const TCEC_URL: &str = "https://tcec-chess.com/";
+pub const CTV_TCEC_URL: &str = "https://ctv.yoshie2000.de/?provider=tcec";
 
 #[derive(Debug, Clone)]
 pub struct EngineName(String);
