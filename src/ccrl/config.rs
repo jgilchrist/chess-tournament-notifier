@@ -2,7 +2,7 @@ use anyhow::Result;
 use regex::Regex;
 use reqwest::Url;
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 pub struct Config {
     pub config_url: Url,
@@ -52,6 +52,45 @@ pub struct UserNotifyConfig {
 #[derive(Debug, PartialEq)]
 pub struct NotifyConfig {
     pub engines: HashMap<String, Vec<UserNotifyConfig>>,
+}
+
+impl NotifyConfig {
+    pub fn engines_summary(&self) -> String {
+        let mut engines: Vec<_> = self.engines.iter().collect();
+        engines.sort_by_key(|(name, _)| name.clone());
+
+        engines
+            .into_iter()
+            .map(|(engine, users)| {
+                let mut authors: Vec<_> = users.iter().map(|u| u.user_id.clone()).collect();
+                authors.sort();
+                format!("{}: {}", engine, authors.join(", "))
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    pub fn diff_summary(&self, new: &NotifyConfig) -> String {
+        let old_lines: HashSet<String> = self.engines_summary().lines().map(String::from).collect();
+        let new_lines: HashSet<String> = new.engines_summary().lines().map(String::from).collect();
+
+        let mut removed: Vec<_> = old_lines.difference(&new_lines).cloned().collect();
+        let mut added: Vec<_> = new_lines.difference(&old_lines).cloned().collect();
+        removed.sort();
+        added.sort();
+
+        let lines: Vec<String> = removed
+            .into_iter()
+            .map(|line| format!("-{}", line))
+            .chain(added.into_iter().map(|line| format!("+{}", line)))
+            .collect();
+
+        if lines.is_empty() {
+            "No changes".to_string()
+        } else {
+            lines.join("\n")
+        }
+    }
 }
 
 impl PartialEq for TournamentRules {

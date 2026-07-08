@@ -16,6 +16,53 @@ pub struct NotifyConfig {
     pub alphabeta_engines: HashMap<String, HashSet<String>>,
 }
 
+impl NotifyConfig {
+    pub fn engines_summary(&self) -> String {
+        fn format_group(engines: &HashMap<String, HashSet<String>>) -> String {
+            let mut engines: Vec<_> = engines.iter().collect();
+            engines.sort_by_key(|(name, _)| name.clone());
+
+            engines
+                .into_iter()
+                .map(|(engine, authors)| {
+                    let mut authors: Vec<_> = authors.iter().cloned().collect();
+                    authors.sort();
+                    format!("{}: {}", engine, authors.join(", "))
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        }
+
+        format!(
+            "TCEC:\n{}\nAlphaBeta:\n{}",
+            format_group(&self.tcec_engines),
+            format_group(&self.alphabeta_engines)
+        )
+    }
+
+    pub fn diff_summary(&self, new: &NotifyConfig) -> String {
+        let old_lines: HashSet<String> = self.engines_summary().lines().map(String::from).collect();
+        let new_lines: HashSet<String> = new.engines_summary().lines().map(String::from).collect();
+
+        let mut removed: Vec<_> = old_lines.difference(&new_lines).cloned().collect();
+        let mut added: Vec<_> = new_lines.difference(&old_lines).cloned().collect();
+        removed.sort();
+        added.sort();
+
+        let lines: Vec<String> = removed
+            .into_iter()
+            .map(|line| format!("-{}", line))
+            .chain(added.into_iter().map(|line| format!("+{}", line)))
+            .collect();
+
+        if lines.is_empty() {
+            "No changes".to_string()
+        } else {
+            lines.join("\n")
+        }
+    }
+}
+
 #[derive(Deserialize)]
 struct ConfigFile {
     pub tcec_users: HashMap<String, HashSet<String>>,

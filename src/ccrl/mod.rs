@@ -24,7 +24,7 @@ pub fn run() -> Result<()> {
     let db = CcrlDb::open().expect("Unable to open database");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
-    log.info(&format!("Loaded config: {:?}", notify_config));
+    log.info(&format!("Loaded config:\n{}", notify_config.engines_summary()));
 
     loop {
         let new_notify_config = config::get_notify_config(&config);
@@ -34,8 +34,8 @@ pub fn run() -> Result<()> {
             let new_notify_config = new_notify_config?;
             if notify_config != new_notify_config {
                 log.info(&format!(
-                    "<@!106120945231466496> Config update loaded: {:?}",
-                    new_notify_config
+                    "<@!106120945231466496> Config update loaded:\n```diff\n{}\n```",
+                    notify_config.diff_summary(&new_notify_config)
                 ));
                 notify_config = new_notify_config;
             }
