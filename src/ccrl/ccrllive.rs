@@ -5,8 +5,25 @@ use anyhow::Result;
 use regex::Regex;
 use std::fmt::Formatter;
 use std::hash::Hasher;
+use serde::Deserialize;
 
 const CCRL_LIVE_ROOMS_URL: &str = "https://ccrl.live/broadcasts";
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CcrlLiveBroadcastJson {
+    port: u64,
+    white: String,
+    black: String,
+    white_time: u64,
+    black_time: u64,
+    site: String,
+    fen: String,
+    score: Option<String>,
+    opening: String,
+    move_count: u64,
+    viewer_count: u64,
+}
+
 
 #[derive(Debug, Clone)]
 pub struct CcrlLiveRoom {
@@ -110,9 +127,9 @@ fn get_active_broadcasts() -> Result<Vec<CcrlLiveRoom>> {
     let response = reqwest::blocking::get(CCRL_LIVE_ROOMS_URL)?.error_for_status()?;
 
     let rooms = response
-        .json::<Vec<u64>>()?
+        .json::<Vec<CcrlLiveBroadcastJson>>()?
         .iter()
-        .map(|r| CcrlLiveRoom::new(&r.to_string()))
+        .map(|r| CcrlLiveRoom::new(&r.port.to_string()))
         .collect();
 
     Ok(rooms)
