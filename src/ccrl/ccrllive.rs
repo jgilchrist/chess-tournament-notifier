@@ -10,6 +10,7 @@ use serde::Deserialize;
 const CCRL_LIVE_ROOMS_URL: &str = "https://ccrl.live/broadcasts";
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CcrlLiveBroadcastJson {
     port: u64,
     white: String,
