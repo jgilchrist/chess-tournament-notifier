@@ -6,5 +6,6 @@ Tournaments currently supported are:
 
 - TCEC
 - ccrl.live
+- CCC (Chess.com Computer Chess Championship)
 
 Currently, the only supported method of notification is Discord webhook.

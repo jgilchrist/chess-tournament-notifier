@@ -1,3 +1,4 @@
+mod ccc;
 mod ccrl;
 mod db;
 mod discord;
@@ -29,6 +30,18 @@ fn main() {
         })
         .unwrap();
 
+    let ccc = std::thread::Builder::new()
+        .name("ccc".into())
+        .spawn(|| {
+            if let Err(e) = std::panic::catch_unwind(|| {
+                let _ = ccc::run();
+            }) {
+                eprintln!("[ccc] panic: {:?}", e);
+            }
+        })
+        .unwrap();
+
     let _ = ccrl.join();
     let _ = tcec.join();
+    let _ = ccc.join();
 }
