@@ -72,34 +72,28 @@ pub fn run() -> Result<()> {
             .collect::<Vec<_>>();
 
         for (room, game) in &new_games {
-            log.info(&format!(
-                "`{}` - `{}` vs `{}`",
-                room.code(),
-                game.white_player,
-                game.black_player,
-            ));
-
-            let mut mentions = HashSet::new();
+            let mut white_mentions = HashSet::new();
+            let mut black_mentions = HashSet::new();
 
             for (engine, user_configs) in &notify_config.engines {
-                if game.has_player(engine) {
-                    let matching_users: Vec<String> = user_configs
-                        .iter()
-                        .filter(|user_config| user_config.rules.notify_for_tournament(&game.site))
-                        .map(|user_config| user_config.user_id.clone())
-                        .collect();
+                let matching_users: Vec<String> = user_configs
+                    .iter()
+                    .filter(|user_config| user_config.rules.notify_for_tournament(&game.site))
+                    .map(|user_config| user_config.user_id.clone())
+                    .collect();
 
-                    if !matching_users.is_empty() {
-                        mentions.extend(matching_users.iter().cloned());
-                        log.info(&format!(
-                            "`{}` Will notify {} users for engine `{}`",
-                            room.code(),
-                            matching_users.len(),
-                            &engine,
-                        ));
-                    }
+                if game.white_player.matches(engine) {
+                    white_mentions.extend(matching_users.iter().cloned());
+                }
+                if game.black_player.matches(engine) {
+                    black_mentions.extend(matching_users);
                 }
             }
+
+            let white_notification_count = white_mentions.len();
+            let black_notification_count = black_mentions.len();
+            let mut mentions = white_mentions;
+            mentions.extend(black_mentions);
 
             if !mentions.is_empty() {
                 let notify_result = notify::notify(
@@ -121,8 +115,25 @@ pub fn run() -> Result<()> {
             if let Err(e) = db.add(&game) {
                 log.error(&format!("Unable to write seen game to db: {:?}", e));
             }
+
+            log.info(&format!(
+                "`{}` - `{}`{} vs `{}`{}",
+                room.code(),
+                game.white_player,
+                notification_marker(white_notification_count),
+                game.black_player,
+                notification_marker(black_notification_count),
+            ));
         }
 
         std::thread::sleep(POLL_DELAY);
+    }
+}
+
+fn notification_marker(count: usize) -> String {
+    match count {
+        0 => String::new(),
+        1 => " 🔔".to_string(),
+        count => format!(" 🔔{}", count),
     }
 }

@@ -81,35 +81,40 @@ pub fn run() -> Result<()> {
             continue;
         }
 
-        log.info(&format!(
-            "`{}` vs `{}`",
-            game.white_player, game.black_player,
-        ));
-
-        let mut tcec_mentions = HashSet::new();
-        let mut alphabeta_mentions = HashSet::new();
+        let mut tcec_white_mentions = HashSet::new();
+        let mut tcec_black_mentions = HashSet::new();
+        let mut alphabeta_white_mentions = HashSet::new();
+        let mut alphabeta_black_mentions = HashSet::new();
 
         for (engine, notifies) in &notify_config.tcec_engines {
-            if game.has_player(engine) {
-                tcec_mentions.extend(notifies.iter().cloned());
-                log.info(&format!(
-                    "Will notify {} users for engine `{}` in TCEC",
-                    notifies.len(),
-                    &engine,
-                ));
+            if game.white_player.matches(engine) {
+                tcec_white_mentions.extend(notifies.iter().cloned());
+            }
+            if game.black_player.matches(engine) {
+                tcec_black_mentions.extend(notifies.iter().cloned());
             }
         }
 
         for (engine, notifies) in &notify_config.alphabeta_engines {
-            if game.has_player(engine) {
-                alphabeta_mentions.extend(notifies.iter().cloned());
-                log.info(&format!(
-                    "Will notify {} users for engine `{}` in AlphaBeta",
-                    notifies.len(),
-                    &engine,
-                ));
+            if game.white_player.matches(engine) {
+                alphabeta_white_mentions.extend(notifies.iter().cloned());
+            }
+            if game.black_player.matches(engine) {
+                alphabeta_black_mentions.extend(notifies.iter().cloned());
             }
         }
+
+        let mut tcec_mentions = tcec_white_mentions.clone();
+        tcec_mentions.extend(tcec_black_mentions.iter().cloned());
+        let mut alphabeta_mentions = alphabeta_white_mentions.clone();
+        alphabeta_mentions.extend(alphabeta_black_mentions.iter().cloned());
+
+        let white_notification_count = tcec_white_mentions
+            .union(&alphabeta_white_mentions)
+            .count();
+        let black_notification_count = tcec_black_mentions
+            .union(&alphabeta_black_mentions)
+            .count();
 
         let tcec_notify_result = notify::notify_tcec(
             &config,
@@ -122,7 +127,7 @@ pub fn run() -> Result<()> {
         );
 
         if let Err(e) = tcec_notify_result {
-            log.error(&format!("Unable to send notify: {:?}", e));
+            log.error(&format!("Unable to send TCEC notify: {:?}", e));
         }
 
         let alphabeta_notify_result = notify::notify_alphabeta(
@@ -136,13 +141,29 @@ pub fn run() -> Result<()> {
         );
 
         if let Err(e) = alphabeta_notify_result {
-            log.error(&format!("Unable to send notify: {:?}", e));
+            log.error(&format!("Unable to send AlphaBeta notify: {:?}", e));
         }
 
         if let Err(e) = db.add(&game) {
             log.error(&format!("Unable to write seen game to db: {:?}", e));
         }
 
+        log.info(&format!(
+            "`{}`{} vs `{}`{}",
+            game.white_player,
+            notification_marker(white_notification_count),
+            game.black_player,
+            notification_marker(black_notification_count),
+        ));
+
         std::thread::sleep(POLL_DELAY);
+    }
+}
+
+fn notification_marker(count: usize) -> String {
+    match count {
+        0 => String::new(),
+        1 => " 🔔".to_string(),
+        count => format!(" 🔔{}", count),
     }
 }
