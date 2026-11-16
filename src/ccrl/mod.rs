@@ -24,7 +24,10 @@ pub fn run() -> Result<()> {
     let db = CcrlDb::open().expect("Unable to open database");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
-    log.info(&format!("Loaded config:\n{}", notify_config.engines_summary()));
+    log.info(&format!(
+        "Loaded config:\n{}",
+        notify_config.engines_summary()
+    ));
 
     loop {
         let new_notify_config = config::get_notify_config(&config);

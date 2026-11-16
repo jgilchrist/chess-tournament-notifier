@@ -3,9 +3,9 @@ use super::ccrl_pgn::Pgn;
 use crate::log::Logger;
 use anyhow::Result;
 use regex::Regex;
+use serde::Deserialize;
 use std::fmt::Formatter;
 use std::hash::Hasher;
-use serde::Deserialize;
 
 const CCRL_LIVE_ROOMS_URL: &str = "https://ccrl.live/broadcasts";
 
@@ -24,7 +24,6 @@ pub struct CcrlLiveBroadcastJson {
     move_count: u64,
     viewer_count: u64,
 }
-
 
 #[derive(Debug, Clone)]
 pub struct CcrlLiveRoom {

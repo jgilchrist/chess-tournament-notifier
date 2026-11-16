@@ -32,7 +32,10 @@ pub fn run() -> Result<()> {
     let db = TcecDb::open().expect("Unable to open database");
     let mut notify_config = config::get_notify_config(&config).expect("Unable to load config");
 
-    log.info(&format!("Loaded config:\n{}", notify_config.engines_summary()));
+    log.info(&format!(
+        "Loaded config:\n{}",
+        notify_config.engines_summary()
+    ));
 
     loop {
         let new_notify_config = config::get_notify_config(&config);
@@ -109,12 +112,8 @@ pub fn run() -> Result<()> {
         let mut alphabeta_mentions = alphabeta_white_mentions.clone();
         alphabeta_mentions.extend(alphabeta_black_mentions.iter().cloned());
 
-        let white_notification_count = tcec_white_mentions
-            .union(&alphabeta_white_mentions)
-            .count();
-        let black_notification_count = tcec_black_mentions
-            .union(&alphabeta_black_mentions)
-            .count();
+        let white_notification_count = tcec_white_mentions.union(&alphabeta_white_mentions).count();
+        let black_notification_count = tcec_black_mentions.union(&alphabeta_black_mentions).count();
 
         let tcec_notify_result = notify::notify_tcec(
             &config,

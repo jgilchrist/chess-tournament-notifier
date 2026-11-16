@@ -1,6 +1,6 @@
-use crate::log::Logger;
 use super::tcec_pgn;
 use super::tcec_pgn::Pgn;
+use crate::log::Logger;
 use anyhow::{bail, Result};
 use regex::Regex;
 use std::fmt::Formatter;

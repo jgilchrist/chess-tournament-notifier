@@ -145,7 +145,10 @@ impl Visitor for PgnInfoBuilder {
 
     fn san(&mut self, san: SanPlus) {
         if let Some(last_san) = self.last_san.clone() {
-            self.add_move(&last_san, &self.last_comment.clone().unwrap_or(String::new()))
+            self.add_move(
+                &last_san,
+                &self.last_comment.clone().unwrap_or(String::new()),
+            )
         }
 
         self.last_comment = None;
@@ -164,7 +167,10 @@ impl Visitor for PgnInfoBuilder {
     fn end_game(&mut self) -> Self::Result {
         // Handle the last move we saw
         if let Some(last_san) = self.last_san.clone() {
-            self.add_move(&last_san, &self.last_comment.clone().unwrap_or(String::new()))
+            self.add_move(
+                &last_san,
+                &self.last_comment.clone().unwrap_or(String::new()),
+            )
         }
 
         assert_ne!(self.white_player, None);

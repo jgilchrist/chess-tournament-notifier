@@ -1,6 +1,6 @@
-use anyhow::Result;
-use crate::db::Db;
 use super::ccrl_pgn::Pgn;
+use crate::db::Db;
+use anyhow::Result;
 
 pub struct CcrlDb(Db);
 
@@ -12,12 +12,10 @@ impl CcrlDb {
     pub fn contains(&self, game: &Pgn) -> Result<bool> {
         let hash = game.as_hash() as i64;
         let result = self.0.rt.block_on(async {
-            sqlx::query_scalar::<_, i64>(
-                "SELECT EXISTS(SELECT 1 FROM ccrl_games WHERE hash = ?)",
-            )
-            .bind(hash)
-            .fetch_one(&self.0.pool)
-            .await
+            sqlx::query_scalar::<_, i64>("SELECT EXISTS(SELECT 1 FROM ccrl_games WHERE hash = ?)")
+                .bind(hash)
+                .fetch_one(&self.0.pool)
+                .await
         })?;
         Ok(result != 0)
     }

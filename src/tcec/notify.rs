@@ -1,8 +1,8 @@
-use crate::discord;
 use super::tcec::{EngineName, CTV_TCEC_URL, TCEC_URL};
+use crate::discord;
+use crate::tcec::config::Config;
 use anyhow::Result;
 use std::collections::HashSet;
-use crate::tcec::config::Config;
 
 pub struct NotifyContent {
     pub white_player: EngineName,
@@ -39,12 +39,12 @@ pub fn notify_alphabeta(config: &Config, content: NotifyContent) -> Result<()> {
     let mentions_str = if !content.mentions.is_empty() {
         "   cc. ".to_string()
             + content
-            .mentions
-            .iter()
-            .map(|m| format!("<@!{}>", m))
-            .collect::<Vec<_>>()
-            .join(" ")
-            .as_str()
+                .mentions
+                .iter()
+                .map(|m| format!("<@!{}>", m))
+                .collect::<Vec<_>>()
+                .join(" ")
+                .as_str()
     } else {
         String::new()
     };
@@ -54,7 +54,11 @@ pub fn notify_alphabeta(config: &Config, content: NotifyContent) -> Result<()> {
         "tcec-notifier",
         &format!(
             "[`{}`]({}) `{}` vs. `{}`{}",
-            content.tournament, CTV_TCEC_URL, content.white_player, content.black_player, mentions_str
+            content.tournament,
+            CTV_TCEC_URL,
+            content.white_player,
+            content.black_player,
+            mentions_str
         ),
     )
 }
