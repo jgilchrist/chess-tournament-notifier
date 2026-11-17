@@ -22,7 +22,7 @@ pub fn notify(config: &Config, game: &Game, mentions: HashSet<String>) -> Result
         &config.notify_webhook,
         "ccc-notifier",
         &format!(
-            "[`{}`]({}) `{}` vs. `{}`{}",
+            "[`{}`](<{}>) `{}` vs. `{}`{}",
             game.event, CCC_URL, game.white, game.black, mentions
         ),
     )
