@@ -67,10 +67,8 @@ pub fn run() -> Result<()> {
                         }
                     }
 
-                    if !mentions.is_empty() {
-                        if let Err(e) = notify::notify(&config, &game, mentions) {
-                            log.error(&format!("Unable to send notify: {:?}", e));
-                        }
+                    if let Err(e) = notify::notify(&config, &game, mentions) {
+                        log.error(&format!("Unable to send notify: {:?}", e));
                     }
                     if let Err(e) = db.add(&game) {
                         log.error(&format!("Unable to write seen game to db: {:?}", e));
