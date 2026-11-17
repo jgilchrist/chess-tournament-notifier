@@ -3,7 +3,7 @@ use crate::discord;
 use anyhow::Result;
 use std::collections::HashSet;
 
-const CCC_URL: &str = "https://www.chess.com/computer-chess-championship";
+const CCC_URL: &str = "https://ctv.yoshie2000.de/?provider=ccc";
 
 pub fn notify(config: &Config, game: &Game, mentions: HashSet<String>) -> Result<()> {
     let mentions = if mentions.is_empty() {
